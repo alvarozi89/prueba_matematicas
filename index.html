@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prueba de Matemáticas - 10 Preguntas</title>
+  <!-- Carga de Tailwind CSS para diseño moderno y responsivo -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Carga de fuente Inter de Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-100 selection:text-indigo-800">
+
+  <!-- Encabezado superior fijo -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+          <!-- Icono SVG de calculadora / matemáticas -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Prueba de Matemáticas</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Evaluación interactiva con resolución paso a paso</p>
+        </div>
+      </div>
+
+      <!-- Indicador de puntaje en tiempo real -->
+      <div id="header-stats" class="flex items-center gap-3 sm:gap-4">
+        <div class="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-2">
+          <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Puntaje:</span>
+          <span id="live-score" class="text-sm sm:text-base font-extrabold text-indigo-600">0 / 10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div id="progress-wrapper" class="w-full bg-slate-200 h-1.5 overflow-hidden">
+      <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-500 ease-out" style="width: 10%"></div>
+    </div>
+  </header>
+
+  <!-- Contenedor principal -->
+  <main class="flex-grow flex items-center justify-center px-4 sm:px-6 py-8">
+    <div class="w-full max-w-3xl">
+
+      <!-- VISTA 1: Tarjeta de Pregunta Activa -->
+      <section id="quiz-container" class="bg-white rounded-2xl shadow-lg border border-slate-200/80 overflow-hidden transition-all duration-300">
+        
+        <!-- Cabecera de la pregunta -->
+        <div class="bg-slate-50/80 border-b border-slate-200 px-6 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-2">
+          <span id="question-counter" class="text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
+            Pregunta 1 de 10
+          </span>
+          <span id="question-category" class="text-xs font-semibold text-slate-600 bg-slate-200/70 px-3 py-1 rounded-full uppercase tracking-wide">
+            Porcentajes
+          </span>
+        </div>
+
+        <!-- Cuerpo de la pregunta y opciones -->
+        <div class="p-6 sm:p-8">
+          <h2 id="question-text" class="text-lg sm:text-xl font-bold text-slate-900 leading-relaxed mb-6">
+            Cargando pregunta...
+          </h2>
+
+          <!-- Contenedor de las 4 opciones -->
+          <div id="options-container" class="space-y-3" role="group" aria-label="Opciones de respuesta">
+            <!-- Los botones se generan dinámicamente con JavaScript -->
+          </div>
+
+          <!-- Cuadro de Retroalimentación Inmediata (oculto hasta responder) -->
+          <div id="feedback-box" class="hidden mt-6 rounded-2xl p-5 border transition-all duration-300" aria-live="polite">
+            <div class="flex items-start gap-3.5">
+              <div id="feedback-icon" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <!-- Icono dinámico correcto/incorrecto -->
+              </div>
+              <div class="flex-1">
+                <h3 id="feedback-title" class="text-base font-extrabold mb-1">
+                  <!-- Título dinámico -->
+                </h3>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Procedimiento paso a paso:
+                </p>
+                <p id="feedback-explanation" class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                  <!-- Explicación matemática detallada -->
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón de navegación inferior -->
+          <div class="mt-8 pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
+            <p id="hint-status" class="text-xs sm:text-sm text-slate-400 font-medium">
+              Selecciona una opción para ver el procedimiento.
+            </p>
+            <button
+              id="next-btn"
+              disabled
+              class="px-6 py-3 rounded-xl font-semibold text-sm sm:text-base bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-indigo-600 transition-all flex items-center gap-2 shrink-0"
+            >
+              <span id="next-btn-text">Siguiente pregunta</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 2: Pantalla Final de Resultados (oculta inicialmente) -->
+      <section id="results-container" class="hidden bg-white rounded-2xl shadow-lg border border-slate-200/80 overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-violet-600 px-6 sm:px-8 py-8 text-white text-center">
+          <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold mb-1">¡Prueba Completada!</h2>
+          <p class="text-indigo-100 text-sm sm:text-base">Aquí tienes el resumen de tu desempeño en matemáticas</p>
+        </div>
+
+        <div class="p-6 sm:p-8">
+          <!-- Tarjetas de métricas -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 block mb-1">Puntaje Total</span>
+              <span id="final-score" class="text-3xl font-extrabold text-slate-900">0 / 10</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 block mb-1">Porcentaje</span>
+              <span id="final-percentage" class="text-3xl font-extrabold text-indigo-600">0%</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 block mb-1">Nivel Alcanzado</span>
+              <span id="final-level" class="text-lg sm:text-xl font-extrabold text-emerald-600 mt-1 block">Intermedio</span>
+            </div>
+          </div>
+
+          <!-- Mensaje personalizado según desempeño -->
+          <div id="level-description-box" class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 mb-6 text-center">
+            <p id="level-description" class="text-sm sm:text-base text-slate-700 leading-relaxed font-medium">
+              <!-- Descripción dinámica -->
+            </p>
+          </div>
+
+          <!-- Resumen rápido de aciertos y errores -->
+          <div class="mb-8">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Mapa de respuestas:</h3>
+            <div id="summary-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+              <!-- Badges del 1 al 10 indicando verde o rojo -->
+            </div>
+          </div>
+
+          <!-- Botones de reinicio -->
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              id="restart-shuffle-btn"
+              class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-semibold text-sm sm:text-base bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Reiniciar (orden aleatorio)</span>
+            </button>
+            <button
+              id="restart-ordered-btn"
+              class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-semibold text-sm sm:text-base bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100 transition-all"
+            >
+              Reiniciar en orden original
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Pie de página -->
+  <footer class="py-4 text-center text-xs text-slate-400">
+    Prueba de Matemáticas • 10 ejercicios fundamentales con solución paso a paso
+  </footer>
+
+  <!-- Lógica completa en JavaScript -->
+  <script>
+    /**
+     * Banco de 10 preguntas variadas de matemáticas fundamentales.
+     * Cubre: porcentajes, ecuaciones lineales, fracciones, regla de tres,
+     * geometría, álgebra básica, potencias/raíces, probabilidad, promedios y sistemas sencillos.
+     */
+    const ORIGINAL_QUESTIONS = [
+      {
+        category: "Porcentajes",
+        question: "Una chaqueta tiene un precio original de $120.000 y recibe un descuento del 25%. Si luego se aplica un impuesto del 10% sobre el precio rebajado, ¿cuál es el precio final a pagar?",
+        options: ["$90.000", "$99.000", "$102.000", "$105.000"],
+        correctIndex: 1,
+        explanation: "Paso 1: Calculamos el 25% de descuento sobre $120.000: 120.000 × 0,25 = $30.000. El precio rebajado es 120.000 - 30.000 = $90.000. Paso 2: Calculamos el 10% de impuesto sobre $90.000: 90.000 × 0,10 = $9.000. Paso 3: Sumamos el impuesto al precio rebajado: 90.000 + 9.000 = $99.000."
+      },
+      {
+        category: "Ecuaciones Lineales",
+        question: "Resuelve para x la siguiente ecuación lineal:  3(2x - 4) + 5 = 2x + 13",
+        options: ["x = 4", "x = 5", "x = 6", "x = 8"],
+        correctIndex: 1,
+        explanation: "Paso 1: Aplicamos la propiedad distributiva en el lado izquierdo: 6x - 12 + 5 = 2x + 13, lo que simplifica a 6x - 7 = 2x + 13. Paso 2: Agrupamos términos con x a la izquierda y constantes a la derecha: 6x - 2x = 13 + 7 → 4x = 20. Paso 3: Dividimos entre 4: x = 20 / 4 = 5."
+      },
+      {
+        category: "Fracciones",
+        question: "De un tanque de agua lleno, por la mañana se consume 1/3 de su capacidad y por la tarde se consume 2/5 de la capacidad total. ¿Qué fracción del tanque queda aún con agua?",
+        options: ["3/8", "4/15", "11/15", "2/5"],
+        correctIndex: 1,
+        explanation: "Paso 1: Sumamos las fracciones consumidas buscando un denominador común (mínimo común múltiplo de 3 y 5 es 15): 1/3 + 2/5 = 5/15 + 6/15 = 11/15 consumidos. Paso 2: Restamos esa fracción del tanque completo (15/15): 15/15 - 11/15 = 4/15 del tanque queda con agua."
+      },
+      {
+        category: "Proporciones y Regla de Tres",
+        question: "Si 6 obreros construyen un muro en 12 días trabajando al mismo ritmo, ¿cuántos días tardarán 9 obreros en construir exactamente el mismo muro?",
+        options: ["6 días", "8 días", "9 días", "18 días"],
+        correctIndex: 1,
+        explanation: "Es una proporción inversa: a mayor cantidad de obreros, menor tiempo tardarán. Multiplicamos los valores conocidos en paralelo: 6 obreros × 12 días = 72 días-obrero de trabajo total. Luego dividimos entre los 9 obreros: 72 / 9 = 8 días."
+      },
+      {
+        category: "Geometría Básica",
+        question: "Un triángulo rectángulo tiene una hipotenusa de 13 cm y uno de sus catetos mide 5 cm. ¿Cuál es el área de este triángulo?",
+        options: ["30 cm²", "32,5 cm²", "60 cm²", "65 cm²"],
+        correctIndex: 0,
+        explanation: "Paso 1: Usamos el Teorema de Pitágoras (a² + b² = c²) para hallar el otro cateto: 5² + b² = 13² → 25 + b² = 169 → b² = 144 → b = 12 cm. Paso 2: Calculamos el área del triángulo (base × altura / 2): (5 cm × 12 cm) / 2 = 60 / 2 = 30 cm²."
+      },
+      {
+        category: "Álgebra Básica",
+        question: "Simplifica completamente la siguiente expresión algebraica:  (4x² - 9) / (2x + 3)  (para x ≠ -3/2)",
+        options: ["2x + 3", "2x - 3", "4x - 3", "2x - 9"],
+        correctIndex: 1,
+        explanation: "Paso 1: Identificamos que el numerador (4x² - 9) es una diferencia de cuadrados de la forma a² - b² = (a - b)(a + b), donde a = 2x y b = 3. Paso 2: Factorizamos: 4x² - 9 = (2x - 3)(2x + 3). Paso 3: Cancelamos el factor común (2x + 3) en numerador y denominador, quedando 2x - 3."
+      },
+      {
+        category: "Potencias y Raíces",
+        question: "¿Cuál es el resultado numérico de la siguiente operación?  (2³ × 2⁴) / 2⁵ + √81",
+        options: ["11", "13", "15", "17"],
+        correctIndex: 1,
+        explanation: "Paso 1: Aplicamos propiedades de potencias de igual base: en el numerador sumamos exponentes (2³ × 2⁴ = 2⁷) y luego restamos el exponente del denominador (2⁷ / 2⁵ = 2² = 4). Paso 2: Calculamos la raíz cuadrada: √81 = 9. Paso 3: Sumamos ambos resultados: 4 + 9 = 13."
+      },
+      {
+        category: "Probabilidad Básica",
+        question: "En una urna hay 4 bolas rojas, 5 bolas azules y 3 bolas verdes. Si extraes una bola al azar sin mirar, ¿cuál es la probabilidad de que NO sea azul?",
+        options: ["5/12", "7/12", "1/3", "3/4"],
+        correctIndex: 1,
+        explanation: "Paso 1: Calculamos el total de casos posibles sumando todas las bolas: 4 + 5 + 3 = 12 bolas. Paso 2: Contamos los casos favorables (bolas que no son azules, es decir, rojas + verdes): 4 + 3 = 7 bolas. Paso 3: La probabilidad es casos favorables / casos totales = 7/12."
+      },
+      {
+        category: "Estadística y Promedios",
+        question: "El promedio (media aritmética) de 4 exámenes de un estudiante es 82 puntos. ¿Qué calificación necesita obtener en el quinto examen para que su promedio general suba exactamente a 85 puntos?",
+        options: ["88 puntos", "92 puntos", "95 puntos", "97 puntos"],
+        correctIndex: 3,
+        explanation: "Paso 1: Calculamos la suma actual de sus 4 notas: 4 × 82 = 328 puntos. Paso 2: Calculamos la suma total necesaria en 5 exámenes para tener promedio 85: 5 × 85 = 425 puntos. Paso 3: Restamos ambas sumas para hallar la quinta nota: 425 - 328 = 97 puntos."
+      },
+      {
+        category: "Sistemas de Ecuaciones",
+        question: "La suma de dos números es 28 y su diferencia es 6. ¿Cuál es el producto (multiplicación) de esos dos números?",
+        options: ["165", "180", "187", "195"],
+        correctIndex: 2,
+        explanation: "Paso 1: Planteamos el sistema: x + y = 28 y x - y = 6. Paso 2: Sumamos ambas ecuaciones para eliminar y: 2x = 34 → x = 17. Paso 3: Sustituimos x = 17 en la primera ecuación: 17 + y = 28 → y = 11. Paso 4: Calculamos su producto: 17 × 11 = 187."
+      }
+    ];
+
+    // Estado de la aplicación
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let hasAnsweredCurrent = false;
+    let userAnswersHistory = []; // Guarda true/false por cada pregunta
+
+    // Referencias a elementos del DOM
+    const quizContainer = document.getElementById('quiz-container');
+    const resultsContainer = document.getElementById('results-container');
+    const questionCounter = document.getElementById('question-counter');
+    const questionCategory = document.getElementById('question-category');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackBox = document.getElementById('feedback-box');
+    const feedbackIcon = document.getElementById('feedback-icon');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackExplanation = document.getElementById('feedback-explanation');
+    const nextBtn = document.getElementById('next-btn');
+    const nextBtnText = document.getElementById('next-btn-text');
+    const hintStatus = document.getElementById('hint-status');
+    const liveScore = document.getElementById('live-score');
+    const progressBar = document.getElementById('progress-bar');
+
+    // Letras para identificar cada botón de opción
+    const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+
+    /**
+     * Mezcla un arreglo usando el algoritmo Fisher-Yates sin mutar el original.
+     */
+    function shuffleArray(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    /**
+     * Inicializa o reinicia la prueba.
+     * @param {boolean} shuffle - Si es true, baraja el orden de las 10 preguntas.
+     */
+    function initQuiz(shuffle = false) {
+      questions = shuffle ? shuffleArray(ORIGINAL_QUESTIONS) : [...ORIGINAL_QUESTIONS];
+      currentQuestionIndex = 0;
+      score = 0;
+      hasAnsweredCurrent = false;
+      userAnswersHistory = [];
+
+      // Actualizar encabezado y visibilidad de contenedores
+      updateScoreDisplay();
+      resultsContainer.classList.add('hidden');
+      quizContainer.classList.remove('hidden');
+
+      renderQuestion();
+    }
+
+    /**
+     * Actualiza el marcador de puntaje y la barra de progreso superior.
+     */
+    function updateScoreDisplay() {
+      liveScore.textContent = `${score} / ${questions.length}`;
+      const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+    }
+
+    /**
+     * Renderiza la pregunta actual y sus 4 botones de opción en pantalla.
+     */
+    function renderQuestion() {
+      hasAnsweredCurrent = false;
+      const currentQ = questions[currentQuestionIndex];
+
+      // Actualizar textos de cabecera y barra de progreso
+      questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+      questionCategory.textContent = currentQ.category;
+      questionText.textContent = currentQ.question;
+      updateScoreDisplay();
+
+      // Ocultar cuadro de retroalimentación y deshabilitar botón siguiente
+      feedbackBox.classList.add('hidden');
+      feedbackBox.classList.remove('bg-emerald-50', 'border-emerald-200', 'bg-rose-50', 'border-rose-200');
+      nextBtn.disabled = true;
+      hintStatus.textContent = 'Selecciona una opción para ver el procedimiento.';
+
+      // Cambiar texto del botón si es la última pregunta (pregunta 10)
+      if (currentQuestionIndex === questions.length - 1) {
+        nextBtnText.textContent = 'Ver resultados';
+      } else {
+        nextBtnText.textContent = 'Siguiente pregunta';
+      }
+
+      // Limpiar y crear los 4 botones de opciones
+      optionsContainer.innerHTML = '';
+      currentQ.options.forEach((optionText, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.index = index;
+        button.className = [
+          'option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 bg-white',
+          'hover:border-indigo-400 hover:bg-indigo-50/40 focus:outline-none focus:ring-4 focus:ring-indigo-100',
+          'transition-all duration-200 flex items-center justify-between gap-3 group'
+        ].join(' ');
+
+        button.innerHTML = `
+          <div class="flex items-center gap-3.5">
+            <span class="option-badge w-8 h-8 rounded-lg bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              ${OPTION_LETTERS[index]}
+            </span>
+            <span class="text-sm sm:text-base font-medium text-slate-800">${optionText}</span>
+          </div>
+          <span class="status-icon shrink-0"></span>
+        `;
+
+        button.addEventListener('click', () => handleOptionSelect(index));
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    /**
+     * Maneja la selección de una respuesta por parte del usuario:
+     * 1. Bloquea las opciones.
+     * 2. Marca en verde la correcta y en rojo la incorrecta (si aplica).
+     * 3. Muestra la retroalimentación inmediata y habilita el avance.
+     */
+    function handleOptionSelect(selectedIndex) {
+      if (hasAnsweredCurrent) return;
+      hasAnsweredCurrent = true;
+
+      const currentQ = questions[currentQuestionIndex];
+      const isCorrect = selectedIndex === currentQ.correctIndex;
+
+      // Actualizar puntaje e historial
+      if (isCorrect) {
+        score++;
+      }
+      userAnswersHistory.push(isCorrect);
+      updateScoreDisplay();
+
+      // Bloquear todos los botones y aplicar estilos visuales
+      const allButtons = optionsContainer.querySelectorAll('.option-btn');
+      allButtons.forEach((btn, idx) => {
+        btn.disabled = true;
+        btn.classList.remove('hover:border-indigo-400', 'hover:bg-indigo-50/40', 'cursor-pointer');
+        btn.classList.add('cursor-default');
+
+        const badge = btn.querySelector('.option-badge');
+        const statusIcon = btn.querySelector('.status-icon');
+        badge.classList.remove('group-hover:bg-indigo-600', 'group-hover:text-white');
+
+        if (idx === currentQ.correctIndex) {
+          // Resaltar respuesta correcta en verde
+          btn.classList.remove('border-slate-200', 'bg-white');
+          btn.classList.add('border-emerald-500', 'bg-emerald-50/90');
+          badge.classList.remove('bg-slate-100', 'text-slate-700');
+          badge.classList.add('bg-emerald-600', 'text-white');
+          statusIcon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          `;
+        } else if (idx === selectedIndex && !isCorrect) {
+          // Resaltar respuesta seleccionada incorrecta en rojo
+          btn.classList.remove('border-slate-200', 'bg-white');
+          btn.classList.add('border-rose-500', 'bg-rose-50/90');
+          badge.classList.remove('bg-slate-100', 'text-slate-700');
+          badge.classList.add('bg-rose-600', 'text-white');
+          statusIcon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          `;
+        } else {
+          // Atenuar las demás opciones no relevantes
+          btn.classList.add('opacity-55');
+        }
+      });
+
+      // Configurar y mostrar el cuadro de retroalimentación inmediata
+      feedbackBox.classList.remove('hidden');
+      if (isCorrect) {
+        feedbackBox.classList.add('bg-emerald-50', 'border-emerald-200');
+        feedbackIcon.className = 'w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5';
+        feedbackIcon.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        `;
+        feedbackTitle.className = 'text-base font-extrabold text-emerald-800 mb-1';
+        feedbackTitle.textContent = '¡Respuesta Correcta!';
+      } else {
+        feedbackBox.classList.add('bg-rose-50', 'border-rose-200');
+        feedbackIcon.className = 'w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5';
+        feedbackIcon.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        `;
+        feedbackTitle.className = 'text-base font-extrabold text-rose-800 mb-1';
+        const correctLetter = OPTION_LETTERS[currentQ.correctIndex];
+        feedbackTitle.textContent = `Respuesta Incorrecta — La opción correcta es la ${correctLetter}`;
+      }
+
+      feedbackExplanation.textContent = currentQ.explanation;
+
+      // Habilitar botón de siguiente pregunta
+      nextBtn.disabled = false;
+      hintStatus.textContent = 'Revisa el procedimiento y continúa cuando estés listo.';
+    }
+
+    /**
+     * Muestra la pantalla final de resumen al concluir las 10 preguntas.
+     */
+    function showResults() {
+      quizContainer.classList.add('hidden');
+      resultsContainer.classList.remove('hidden');
+
+      const total = questions.length;
+      const percentage = Math.round((score / total) * 100);
+
+      document.getElementById('final-score').textContent = `${score} / ${total}`;
+      document.getElementById('final-percentage').textContent = `${percentage}%`;
+
+      const levelEl = document.getElementById('final-level');
+      const descEl = document.getElementById('level-description');
+
+      // Determinar nivel alcanzado según porcentaje
+      if (percentage >= 90) {
+        levelEl.textContent = 'Sobresaliente';
+        levelEl.className = 'text-lg sm:text-xl font-extrabold text-emerald-600 mt-1 block';
+        descEl.textContent = '¡Excelente dominio matemático! Resuelves con precisión problemas de álgebra, geometría, porcentajes y probabilidad.';
+      } else if (percentage >= 70) {
+        levelEl.textContent = 'Avanzado';
+        levelEl.className = 'text-lg sm:text-xl font-extrabold text-indigo-600 mt-1 block';
+        descEl.textContent = '¡Muy buen trabajo! Tienes bases matemáticas sólidas. Repasar los ejercicios fallados te permitirá alcanzar la perfección.';
+      } else if (percentage >= 50) {
+        levelEl.textContent = 'Intermedio';
+        levelEl.className = 'text-lg sm:text-xl font-extrabold text-amber-600 mt-1 block';
+        descEl.textContent = 'Buen intento. Manejas los conceptos básicos, pero conviene practicar el planteamiento paso a paso en ecuaciones y proporciones.';
+      } else {
+        levelEl.textContent = 'En Desarrollo';
+        levelEl.className = 'text-lg sm:text-xl font-extrabold text-rose-600 mt-1 block';
+        descEl.textContent = 'Las matemáticas se fortalecen con la práctica constante. Reinicia la prueba y revisa con calma el procedimiento de cada ejercicio.';
+      }
+
+      // Renderizar mapa visual de las 10 respuestas
+      const summaryGrid = document.getElementById('summary-grid');
+      summaryGrid.innerHTML = '';
+      userAnswersHistory.forEach((wasCorrect, idx) => {
+        const badge = document.createElement('div');
+        badge.className = wasCorrect
+          ? 'h-10 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm flex items-center justify-center'
+          : 'h-10 rounded-xl bg-rose-100 border border-rose-300 text-rose-800 font-bold text-sm flex items-center justify-center';
+        badge.title = `Pregunta ${idx + 1}: ${wasCorrect ? 'Correcta' : 'Incorrecta'}`;
+        badge.textContent = idx + 1;
+        summaryGrid.appendChild(badge);
+      });
+    }
+
+    // Eventos de navegación y reinicio
+    nextBtn.addEventListener('click', () => {
+      if (!hasAnsweredCurrent) return;
+
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    });
+
+    document.getElementById('restart-shuffle-btn').addEventListener('click', () => {
+      initQuiz(true);
+    });
+
+    document.getElementById('restart-ordered-btn').addEventListener('click', () => {
+      initQuiz(false);
+    });
+
+    // Iniciar la prueba al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      initQuiz(false);
+    });
+  </script>
+</body>
+</html>
